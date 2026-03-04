@@ -22,6 +22,45 @@ if 'roster' not in st.session_state:
 with st.sidebar:
     st.header("👤 Staff Entry")
     name = st.text_input("Employee Name")
+    # --- ADMIN CHECK (HIDDEN) ---
+# To access: your-url.streamlit.app/?admin=true
+is_admin = st.query_params.get("admin") == "true"
+
+with st.sidebar:
+    st.header("👤 Staff Entry")
+    name = st.text_input("Employee Name")
+    exp = st.selectbox("Skill Level", ["High Experience", "Less Experienced", "New"])
+    
+    st.write("---")
+    st.write("**Weekly Availability**")
+    
+    # ... (Keep your existing 'days' and 'avail_data' loop here) ...
+
+    if st.button("➕ Add Employee"):
+        if name:
+            st.session_state.roster.append({
+                "Name": name, "Level": exp, "Schedule": avail_data
+            })
+            st.rerun()
+
+    # --- PROTECTED ADMIN SECTION ---
+    if is_admin:
+        st.divider()
+        st.warning("🛠️ ADMIN MODE")
+        if st.button("⚡ Bulk Load 12 Test Staff"):
+            test_names = ["Adam", "Sarah", "Mike", "Elena", "Chris", "Beth", "David", "Julie", "Kevin", "Nora", "Oscar", "Paul"]
+            for t_name in test_names:
+                t_sched = {d: (time(6,30), time(23,0)) if random.random() > 0.1 else None for d in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+                st.session_state.roster.append({
+                    "Name": f"T-{t_name}", 
+                    "Level": random.choice(["High Experience", "Less Experienced", "New"]),
+                    "Schedule": t_sched
+                })
+            st.rerun()
+
+        if st.button("🗑️ Reset All Data"):
+            st.session_state.roster = []
+            st.rerun()
     exp = st.selectbox("Skill Level", ["High Experience", "Less Experienced", "New"])
     
     st.write("---")
