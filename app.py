@@ -77,16 +77,22 @@ with st.sidebar:
 if st.session_state.roster:
     tabs = st.tabs(days)
     
+   # --- 3. MAIN DISPLAY ---
+if st.session_state.roster:
+    tabs = st.tabs(days)
+    
     for i, tab in enumerate(tabs):
         day_name = days[i]
         with tab:
-            # Shift Blocks for filtering
+            st.subheader(f"📅 {day_name} Assignments")
+            
+            # WE DEFINE THE SHIFTS HERE SO THE LOOP CAN SEE THEM
             shifts = [
-                ("☀️ Morning Block (06:30 - 15:00)", time(6,30), time(15,0)),
-                ("🌙 Evening Block (15:00 - 23:00)", time(15,0), time(23,0))
+                ("☀️ Morning Block (06:30 - 15:00)", time(6, 30), time(15, 0)),
+                ("🌙 Evening Block (15:00 - 23:00)", time(15, 0), time(23, 0))
             ]
             
-for s_label, s_start, s_end in shifts:
+            for s_label, s_start, s_end in shifts:
                 st.markdown(f"<div class='shift-header'>{s_label}</div>", unsafe_allow_html=True)
                 
                 on_duty = []
@@ -94,22 +100,20 @@ for s_label, s_start, s_end in shifts:
                     day_sched = emp['Schedule'].get(day_name)
                     if day_sched:
                         e_s, e_e = day_sched
-                        # Logic: Does the employee work during this specific shift block?
+                        # Check if worker's hours overlap with this shift block
                         if e_s < s_end and e_e > s_start:
                             on_duty.append({
                                 "Staff Member": emp['Name'],
                                 "Status": emp['Type'],
-                                "CLOCKED IN": e_s.strftime('%H:%M'),
-                                "CLOCKED OUT": e_e.strftime('%H:%M'),
+                                "CLOCK IN": e_s.strftime('%H:%M'),
+                                "CLOCK OUT": e_e.strftime('%H:%M'),
                                 "Position": "Lead Barista" if emp['Level'] == "High Experience" else "Floor/Cashier"
                             })
                 
                 if on_duty:
-                    # Create the table and sort by arrival time
-                    df_view = pd.DataFrame(on_duty).sort_values(by="CLOCKED IN")
+                    df_view = pd.DataFrame(on_duty).sort_values(by="CLOCK IN")
                     st.table(df_view)
                 else:
-                    st.info(f"No staff scheduled for {s_label.split('(')[0].strip()}.")
+                    st.info(f"No staff scheduled for this block.")
 else:
-    # This block shows when the list is empty
     st.info("👈 Please enter staff members in the sidebar to generate the view.")
