@@ -27,19 +27,38 @@ with st.sidebar:
 is_admin = st.query_params.get("admin") == "true"
 
 with st.sidebar:
+  # --- ADMIN CHECK (HIDDEN) ---
+# Access via: your-url.streamlit.app/?admin=true
+is_admin = st.query_params.get("admin") == "true"
+
+with st.sidebar:
     st.header("👤 Staff Entry")
-    name = st.text_input("Employee Name")
-    exp = st.selectbox("Skill Level", ["High Experience", "Less Experienced", "New"])
+    # Added a unique key here to prevent the DuplicateElementId error
+    name = st.text_input("Employee Name", key="main_name_input")
+    exp = st.selectbox("Skill Level", ["High Experience", "Less Experienced", "New"], key="main_exp_select")
     
     st.write("---")
     st.write("**Weekly Availability**")
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     
-    # ... (Keep your existing 'days' and 'avail_data' loop here) ...
+    avail_data = {}
+    for d in days:
+        with st.expander(f"{d} Hours"):
+            # We use the 'name' variable in the key to keep it unique per person
+            is_off = st.checkbox("Off Day", key=f"off_{d}_{name}")
+            if not is_off:
+                start = st.time_input("Start Time", time(6, 30), key=f"s_{d}_{name}")
+                end = st.time_input("End Time", time(23, 0), key=f"e_{d}_{name}")
+                avail_data[d] = (start, end)
+            else:
+                avail_data[d] = None
 
-    if st.button("➕ Add Employee"):
+    if st.button("➕ Add Employee", key="add_emp_btn"):
         if name:
             st.session_state.roster.append({
-                "Name": name, "Level": exp, "Schedule": avail_data
+                "Name": name, 
+                "Level": exp, 
+                "Schedule": avail_data
             })
             st.rerun()
 
@@ -47,10 +66,11 @@ with st.sidebar:
     if is_admin:
         st.divider()
         st.warning("🛠️ ADMIN MODE")
-        if st.button("⚡ Bulk Load 12 Test Staff"):
+        if st.button("⚡ Bulk Load 12 Test Staff", key="admin_bulk_btn"):
+            import random # Ensure random is available
             test_names = ["Adam", "Sarah", "Mike", "Elena", "Chris", "Beth", "David", "Julie", "Kevin", "Nora", "Oscar", "Paul"]
             for t_name in test_names:
-                t_sched = {d: (time(6,30), time(23,0)) if random.random() > 0.1 else None for d in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+                t_sched = {day: (time(6,30), time(23,0)) if random.random() > 0.1 else None for day in days}
                 st.session_state.roster.append({
                     "Name": f"T-{t_name}", 
                     "Level": random.choice(["High Experience", "Less Experienced", "New"]),
@@ -58,26 +78,9 @@ with st.sidebar:
                 })
             st.rerun()
 
-        if st.button("🗑️ Reset All Data"):
+        if st.button("🗑️ Reset All Data", key="admin_reset_btn"):
             st.session_state.roster = []
             st.rerun()
-    exp = st.selectbox("Skill Level", ["High Experience", "Less Experienced", "New"])
-    
-    st.write("---")
-    st.write("**Weekly Availability**")
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    
-    # Store availability here
-    avail_data = {}
-    for d in days:
-        with st.expander(f"{d} Hours"):
-            is_off = st.checkbox("Off Day", key=f"off_{d}")
-            if not is_off:
-                start = st.time_input("Start Time", time(6, 30), key=f"s_{d}")
-                end = st.time_input("End Time", time(23, 0), key=f"e_{d}")
-                avail_data[d] = (start, end)
-            else:
-                avail_data[d] = None
 
     if st.button("➕ Add Employee"):
         if name:
