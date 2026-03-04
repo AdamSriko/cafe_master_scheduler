@@ -6,7 +6,7 @@ from datetime import time
 # ==========================================
 # 🛠️ MASTER ADMIN TOGGLE (Change to False to hide tools)
 # ==========================================
-SHOW_ADMIN_TOOLS = True 
+SHOW_ADMIN_TOOLS = False 
 # ==========================================
 
 st.set_page_config(page_title="Cafe Scheduler Pro", layout="wide", page_icon="☕")
