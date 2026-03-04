@@ -67,13 +67,13 @@ with st.sidebar:
             test_names = ["Adam", "Sarah", "Mike", "Elena", "Chris", "Beth", "David", "Julie", "Kevin", "Nora", "Oscar", "Paul"]
             for t_name in test_names:
                 # Set random availability for testing
-                if st.button("🗑️ Reset All Data", key="btn_admin_reset"):
+if st.button("🗑️ Reset All Data", key="btn_admin_reset"):
             st.session_state.roster = []
             st.rerun()
 
 # --- 4. MAIN DISPLAY (SCHEDULE) ---
+# Note: This 'if' starts at the very beginning of the line (no spaces)
 if st.session_state.roster:
-    # Create a tab for each day of the week
     tabs = st.tabs(days)
     
     for i, tab in enumerate(tabs):
@@ -81,33 +81,42 @@ if st.session_state.roster:
         with tab:
             st.subheader(f"📅 {day_name} Assignments")
             
-            # MORNING BLOCK (06:30 - 15:00)
+            # Morning Block
             st.markdown("<div class='shift-header'>☀️ Morning Shift (06:30 - 15:00)</div>", unsafe_allow_html=True)
             m_staff = []
             for emp in st.session_state.roster:
                 s_data = emp['Schedule'].get(day_name)
                 if s_data:
                     e_start, e_end = s_data
-                    # Check if their hours overlap with the morning block
                     if e_start < time(15, 0) and e_end > time(6, 30):
                         m_staff.append({
                             "Staff Name": emp['Name'],
                             "Shift Hours": f"{e_start.strftime('%H:%M')} - {e_end.strftime('%H:%M')}",
                             "Position": "Barista (Senior)" if emp['Level'] == "High Experience" else "Floor/Cashier"
                         })
-            
             if m_staff:
                 st.table(pd.DataFrame(m_staff))
             else:
                 st.info("No staff scheduled for this morning.")
 
-            st.write("") # Gap between blocks
+            st.write("") # Spacer
 
-            # EVENING BLOCK (15:00 - 23:00)
+            # Evening Block
             st.markdown("<div class='shift-header'>🌙 Evening Shift (15:00 - 23:00)</div>", unsafe_allow_html=True)
             e_staff = []
             for emp in st.session_state.roster:
                 s_data = emp['Schedule'].get(day_name)
                 if s_data:
                     e_start, e_end = s_data
-                    # Check if
+                    if e_start < time(23, 0) and e_end > time(15, 0):
+                        e_staff.append({
+                            "Staff Name": emp['Name'],
+                            "Shift Hours": f"{e_start.strftime('%H:%M')} - {e_end.strftime('%H:%M')}",
+                            "Position": "Barista (Senior)" if emp['Level'] == "High Experience" else "Floor/Cashier"
+                        })
+            if e_staff:
+                st.table(pd.DataFrame(e_staff))
+            else:
+                st.info("No staff scheduled for this evening.")
+else:
+    st.info("👈 Please enter staff members and their hours in the sidebar to generate the view.")
