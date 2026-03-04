@@ -77,7 +77,6 @@ with st.sidebar:
             if st.button("🗑️ Reset All Data", key="btn_admin_reset"):
                 st.session_state.roster = []
                 st.rerun()
-
 # --- 4. MAIN DISPLAY (SCHEDULE) ---
 if st.session_state.roster:
     tabs = st.tabs(days)
@@ -87,26 +86,42 @@ if st.session_state.roster:
         with tab:
             st.subheader(f"📅 {day_name} Assignments")
             
-            # MORNING BLOCK (06:30 - 15:00)
+            # Morning Block
             st.markdown("<div class='shift-header'>☀️ Morning Shift (06:30 - 15:00)</div>", unsafe_allow_html=True)
             m_staff = []
             for emp in st.session_state.roster:
                 s_data = emp['Schedule'].get(day_name)
                 if s_data:
-                    e_start, e_end = s_data
-                    if e_start < time(15, 0) and e_end > time(6, 30):
+                    e_s, e_e = s_data
+                    if e_s < time(15, 0) and e_e > time(6, 30):
                         m_staff.append({
                             "Staff Name": emp['Name'],
-                            "Shift Hours": f"{e_start.strftime('%H:%M')} - {e_end.strftime('%H:%M')}",
+                            "Shift Hours": f"{e_s.strftime('%H:%M')} - {e_e.strftime('%H:%M')}",
                             "Position": "Barista (Senior)" if emp['Level'] == "High Experience" else "Floor/Cashier"
                         })
-            
             if m_staff:
                 st.table(pd.DataFrame(m_staff))
             else:
                 st.info("No staff scheduled for this morning.")
 
-            st.write("") # Spacer
+            st.write("") 
 
-            # EVENING BLOCK (15:00 - 23:00)
-            st.markdown("<div class='
+            # Evening Block
+            st.markdown("<div class='shift-header'>🌙 Evening Shift (15:00 - 23:00)</div>", unsafe_allow_html=True)
+            e_staff = []
+            for emp in st.session_state.roster:
+                s_data = emp['Schedule'].get(day_name)
+                if s_data:
+                    e_s, e_e = s_data
+                    if e_s < time(23, 0) and e_e > time(15, 0):
+                        e_staff.append({
+                            "Staff Name": emp['Name'],
+                            "Shift Hours": f"{e_s.strftime('%H:%M')} - {e_e.strftime('%H:%M')}",
+                            "Position": "Barista (Senior)" if emp['Level'] == "High Experience" else "Floor/Cashier"
+                        })
+            if e_staff:
+                st.table(pd.DataFrame(e_staff))
+            else:
+                st.info("No staff scheduled for this evening.")
+else:
+    st.info("👈 Please enter staff members and their hours in the sidebar to generate the view.")   
